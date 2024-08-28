@@ -1,151 +1,106 @@
-<p align="center">
-    <img align="center" src="https://www.opencampus.xyz/static/media/coin-logo.39cbd6c42530e57817a5b98ac7621ca7.svg" width="100"></img>
-</p>
+# EduMarket
 
-<h1 align="center">create-edu-dapp</h1>
+EduMarket is a decentralized platform that allows users to buy, sell, gift, and create educational courses using blockchain technology. This enables users to also make money by creating and selling their own courses.
 
-<div align="center">
-    <img src="https://img.shields.io/badge/platform-opencampus-teal.svg?style=flat-square" alt="Platform">
-    <img src="https://img.shields.io/github/license/asharibali/create-edu-dapp-hardhat?color=teal&style=flat-square " alt="License">
-    <img src="https://img.shields.io/npm/v/create-edu-dapp?color=teal" alt="NPM Version">
-    <img src="https://img.shields.io/npm/dm/create-edu-dapp?color=teal" alt="Downloads">
-</div><br>
+The platform leverages smart contracts to ensure secure and transparent transactions. Users can connect their MetaMask wallet to interact with the platform.
 
-A full-stack starter template featuring **Nextjs & Hardhat or Foundry**, designed for building `Dapps`, as well as developing, deploying, testing, and verifying Solidity smart contracts on the Open Campus L3 chain. This starter kit includes pre-installed packages such as `create-next-app`, `hardhat`, `foundry`, `typescript`, `tailwindcss`, `shadcn-ui`, `web3.js`, `ocid`, and more.
+Whenever someone purchases a course, the funds are transferred directly to the course author's wallet. This eliminates the need for intermediaries and ensures that authors receive their earnings instantly.
 
-## 📺 Quickstart | Nextjs & Hardhat
+## Features
 
-**You will find the Nextjs & Foundry implementation [Here](https://github.com/AsharibAli/create-edu-dapp-foundry).**
+- **User Authentication**: Users can log in using Open Campus ID (OCID) for a seamless experience.
+- **Wallet Connection**: Connect your MetaMask wallet for validation, purchasing, or gifting courses.
+- **Instant Earnings**: Authors receive their earnings directly to their wallet upon course purchase.
+- **Course Marketplace**: Browse and purchase available courses listed by various authors.
+- **My Courses**: View and access courses you have purchased.
+- **Create Course**: Authors can create and list their own courses on the platform. 
 
-<div align="center">
-</div>
+## Tech Stack
 
-### ⌛️ create-edu-dapp command
+- **Frontend**: React, Next.js, Tailwind CSS
+- **Blockchain**: Ethereum, Web3.js
+- **Authentication**: Open Campus ID (OCID)
 
-Open up your terminal (or command prompt) and type the following command:
+## Getting Started
 
-```sh
-npx create-edu-dapp <your-dapp-name>
+### Prerequisites
 
-# cd into the directory
-cd <your-dapp-name>
-```
+- Node.js
+- MetaMask extension installed in your browser
+- Ethereum wallet with some ETH for transactions
 
-***Note: If you have used the npx command then you don't have to install manually in any directory.***
+### Installation
 
-### 📜 Smart Contracts
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/edumarket.git
+   cd edumarket
+   ```
 
-All smart contracts are located inside the `backend` aka `hardhat` folder, which can be found in the root directory. To get started, first install the necessary dependencies by running:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```sh
-# change directory into the backend folder
-cd backend
+3. Create a `.env` file in the root directory and add your environment variables:
+   ```env
+   NEXT_PUBLIC_OCID_CLIENT_ID=your_ocid_client_id
+   NEXT_PUBLIC_OCID_REDIRECT_URI=your_ocid_redirect_uri
+   ```
 
-npm install
-```
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-### 🔑 Private key
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Ensure you create a `.env` file in the `backend` directory. Then paste your [Metamask private key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key) in `.env` with the variable name `ACCOUNT_PRIVATE_KEY` as follows:
+## Usage
 
-```sh
-ACCOUNT_PRIVATE_KEY=0x734...
-```
+### Authentication
 
-### ⚙️ Compile
+Users can log in using their Open Campus ID. The login button is available on the homepage if the user is not authenticated.
 
-Now, you can write your contracts in `./contracts/` directory, replace `Greeter.sol` with `<your-contracts>.sol` file.
+### Connecting Wallet
 
-```sh
-# For compiling the smart contracts
-npx hardhat compile
-```
+To interact with the platform, users need to connect their MetaMask wallet. The option to connect the wallet is available on the homepage and other relevant pages.
 
-After successful compilation, the artifacts directory will be created in `./src` with a JSON `/contracts/<your-contracts>.sol/<your-contracts>.json` containing ABI and Bytecode of your compiled smart contracts.
+### Browsing Courses
 
-### 🧪 Test
+Users can browse available courses on the "Buy Courses" page. Each course displays its title, description, price, and author.
 
-To write tests, go to `./test` directory and create `<your-contracts>.ts`, you can test your smart contracts using the following command.
+### Purchasing Courses
 
-```sh
-# For testing the smart contracts
-npx hardhat test
-```
+To purchase a course, click the "Purchase" button on the course card. Ensure your MetaMask wallet is connected and has sufficient funds.
 
+### Gifting Courses
 
-### ⛓️ Deploy
+Users can gift a course to another Ethereum address by clicking the "Gift" button on the course card.
 
-Before deploying the smart contracts, ensure that you have added the [`Open Campus Codex`](https://open-campus-docs.vercel.app/getting-started) to your MetaMask wallet and that it has sufficient funds. If you do not have testnet $EDU on Open Campus Codex, please follow this [faucets guide](https://open-campus-docs.vercel.app/build/faucet).
+### Viewing Purchased Courses
 
-Also, make changes in `./scripts/deploy.ts` (replace the greeter contract name with `<your-contract-name>`).
+Purchased courses are listed on the "My Courses" page. Users can click "Open" to view the course content.
 
-For deploying the smart contracts to `open campus codex` network, type the following command:
+### Creating Courses
 
-```sh
-# For deloying the smart contracts
-npx hardhat run scripts/deploy.ts --network opencampus
-```
+Authors can create new courses by navigating to the "Create Course" page. Fill in the course details and submit the form to list the course on the platform.
 
-```sh
-<your-contract> deployed to: 0x...
-```
+## Code Structure
 
-## **Copy and paste the generated contract JSON ABI folder `contracts` inside the `backend/src/contracts` directory to the `/frontend/` directory.**
+- `frontend/app/page.tsx`: Main application page
+- `frontend/components/Header.tsx`: Header component
+- `frontend/app/buy-courses/page.tsx`: Buy Courses page
+- `frontend/app/my-courses/page.tsx`: My Courses page
+- `frontend/app/create-course/page.tsx`: Create Course page
+- `frontend/app/course/[id]/page.tsx`: Course detail page
+- `frontend/app/user/page.tsx`: User profile page
+- `frontend/app/constants.ts`: Constants used in the application
 
-## **Copy and paste the deployed contract address [here](https://github.com/AsharibAli/create-edu-dapp-hardhat/blob/9783589c2d7b66de4457a15f30f9e8e86a39d02a/frontend/app/page.tsx#L53).**
+## Smart Contract
 
-### ✅ Verify
-
-To verify the deployed smart contract on `Open Campus Codex`, execute the following command:
-
-```sh
-# For verifying the smart contracts
-npx hardhat verify --network opencampus <deployed-contract-address>
-```
-
-### 💻 Next.js client
-
-Start the Next.js app by running the following command in the `frontend` directory:
-
-```sh
-# Change directory into the frontend folder 
-cd frontend
-
-# Start the development server
-npm run dev
-```
-
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="https://i.ibb.co/Zdb4RKD/create-edu-dapp-before.png" alt="create-edu-dapp-before" width="500"/>
-      <b>(/) create-edu-dapp Before Auth</b>
-    </td>
-    <td align="center">
-      <img src="https://i.ibb.co/Xzd8bqS/create-edu-dapp-after.png" alt="create-edu-dapp-after" width="500"/>
-      <b>(state update) create-edu-dapp After Auth</b>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="https://i.ibb.co/dc5JVgF/connect-with-ocid-before.png" alt="connect-with-ocid-before" width="500"/>
-      <b>(/user) connect-with-ocid Before Auth</b>
-    </td>
-    <td align="center">
-      <img src="https://i.ibb.co/QbK9MNm/connect-with-ocid-after.png" alt="connect-with-ocid-after" width="500"/>
-      <b>(state update) connect-with-ocid After Auth</b>
-    </td>
-  </tr>
-</table>
-
-## ➡️ Contributing
-
-We welcome contributions from the community! If you'd like to contribute, please follow the guidelines in our [CONTRIBUTING.md](https://github.com/AsharibAli/create-edu-dapp-hardhat/blob/main/CONTRIBUTING.md) file.
+The smart contract for course storage is located in the backend folder
 
 
-## ⚖️ License
+## Contributing
 
-create-edu-dapp is licensed under the [MIT License](https://github.com/AsharibAli/create-edu-dapp-hardhat/blob/main/LICENSE.md).
-
-<hr>
-Don't forget to star this repositry ⭐️ and Follow on X ~ <a href="https://twitter.com/0xAsharib" target="_blank"><img src="https://img.shields.io/twitter/follow/0xAsharib?style=social" alt="twitter" /></a>
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
