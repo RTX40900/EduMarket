@@ -4,7 +4,6 @@ import contractJson from "@/contracts/CourseStorage.sol/CourseStorage.json";
 import { Contracts } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CourseStorageContractAddress } from "@/app/constants";
-import { useWallet } from "../WalletContext";
 import Web3 from "web3";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import { jwtDecode } from "jwt-decode";
@@ -71,11 +70,9 @@ const MyCourses: React.FC = () => {
           setWeb3(web3);
           const networkId: any = await web3.eth.getChainId();
           const contractAddress = CourseStorageContractAddress;
-          // setGetNetwork(networkId);
-          // setContractAddress(CourseStorageContractAddress);
           const CourseStorage = new web3.eth.Contract(
             contractJson.abi,
-            contractAddress
+            "0x6CF3459F225385ae69d9b09786Ffe3b404725111"
           ) as Contracts;
           setContracts(CourseStorage);
           CourseStorage.setProvider(window.ethereum);
@@ -173,16 +170,20 @@ const MyCourses: React.FC = () => {
     if (contracts && web3) {
       try {
         setLoading(true);
-        console.log("new Course price: ", newCourse.price);
-        const priceWei = web3.utils.toWei(newCourse.price, 'ether');
-        console.log(priceWei);
-        console.log("Price in Wei:", priceWei);
+        let numEdu = Number(newCourse.price); // Convert the price to a number
+        let priceEdu = web3.utils.toWei(numEdu.toString(), 'ether'); // Convert the number to a string
+        
+        console.log(priceEdu);
+        console.log("Price in EDU");
+        console.log(typeof priceEdu);
+  
         const transaction = await contracts.methods.addCourse(
           newCourse.title,
           newCourse.description,
           newCourse.content,
-          priceWei
-        ).send({ from: accountAddress, gas: 300000 });
+          priceEdu // Use priceEdu directly
+        ).send({ from: accountAddress, gas: 3000000 });
+  
         setTxnHash(transaction.transactionHash);
         setShowMessage(true);
         setDisplayMessage("Course created successfully!");
@@ -195,6 +196,7 @@ const MyCourses: React.FC = () => {
       }
     }
   };
+
   useEffect(() => {
 
     if (isConnected) {
@@ -203,25 +205,28 @@ const MyCourses: React.FC = () => {
     }
   }, [isConnected]);
 
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       <Header />
-      <div className="flex flex-col items-center justify-center flex-grow w-full mt-24 px-4">
+      <main className="flex-grow container mx-auto px-4 py-12 mt-16">
         {!ocidUsername && <LoginButton />}
         {ocidUsername && (
-          <div className="max-w-4xl w-full">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold mb-8 text-center">
+              Welcome, <span className="text-indigo-600">{ocidUsername}</span>!
+            </h1>
             {!isConnected && (
-              <Card className="w-full max-w-2xl p-8 shadow-lg" style={{ margin: 'auto' }}>
+              <Card className="max-w-md mx-auto p-8 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-center text-4xl font-bold mt-4">
-                    Create Course
+                  <CardTitle className="text-2xl font-bold text-center mb-4">
+                    Connect Your Wallet
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center mt-4 space-y-6">
+                <CardContent className="flex justify-center">
                   <Button
-                    className="bg-teal-400 hover:bg-teal-700 text-black font-bold py-2 px-4 rounded-md mb-4"
+                    className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md"
                     onClick={ConnectWallet}
-                    variant="link"
                   >
                     Connect with MetaMask
                   </Button>
@@ -229,32 +234,32 @@ const MyCourses: React.FC = () => {
               </Card>
             )}
             {isConnected && (
-              <Card className="w-full max-w-2xl p-8 shadow-lg" style={{ margin: 'auto' }}>
+              <Card className="max-w-2xl mx-auto p-8 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-center text-4xl font-bold mt-4">
+                  <CardTitle className="text-2xl font-bold text-center mb-4">
                     Create Course
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center mt-4 space-y-6">
+                <CardContent className="flex flex-col space-y-6">
                   <input
                     type="text"
                     placeholder="Title"
                     value={newCourse.title}
                     onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   />
                   <textarea
                     placeholder="Description"
                     value={newCourse.description}
                     onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     rows={4}
                   ></textarea>
                   <textarea
                     placeholder="Content (Markdown)"
                     value={newCourse.content}
                     onChange={(e) => setNewCourse({ ...newCourse, content: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     rows={8}
                   ></textarea>
                   <input
@@ -262,10 +267,10 @@ const MyCourses: React.FC = () => {
                     placeholder="Price (in EDU)"
                     value={newCourse.price}
                     onChange={(e) => setNewCourse({ ...newCourse, price: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   />
                   <Button
-                    className="bg-teal-400 hover:bg-teal-700 text-black font-bold py-2 px-4 rounded-md"
+                    className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md"
                     onClick={createCourse}
                     disabled={loading}
                   >
@@ -279,7 +284,7 @@ const MyCourses: React.FC = () => {
             )}
           </div>
         )}
-      </div>
+      </main>
       <Footer />
     </div>
   );

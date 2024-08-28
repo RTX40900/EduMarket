@@ -1,9 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Web3 from "web3";
-// import contractJson from "@/contracts/Greeter.sol/Greeter.json";
 import contractJson from "@/contracts/CourseStorage.sol/CourseStorage.json";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LoginButton from "@/components/LoginButton";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
@@ -24,6 +22,7 @@ interface Course {
   description: string;
   price: string;
   markdownContent?: string;
+  author?: string;
 }
 
 const App: React.FC = () => {
@@ -35,11 +34,6 @@ const App: React.FC = () => {
   const [displayMessage, setDisplayMessage] = useState<string>("");
   const [web3, setWeb3] = useState<Web3 | undefined>(undefined);
   const [contracts, setContracts] = useState<Contracts | undefined>(undefined);
-  // const [getNetwork, setGetNetwork] = useState<number | undefined>(undefined);
-  // const [mmStatus, setMmStatus] = useState<string>("Not connected!");
-  // const [contractAddress, setContractAddress] = useState<string | undefined>(
-  //   undefined
-  // );
   const [loading, setLoading] = useState<boolean>(false);
   const [txnHash, setTxnHash] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState<boolean>(false);
@@ -106,39 +100,13 @@ const App: React.FC = () => {
     }
   };
 
-  const createCourse = async () => {
-    if (contracts && web3) {
-      try {
-        setLoading(true);
-        const priceWei = web3.utils.toWei(newCourse.price, 'ether');
-        console.log(priceWei);
-        console.log("converting to eth")
-        console.log(typeof priceWei);
-        const transaction = await contracts.methods.addCourse(
-          newCourse.title,
-          newCourse.description,
-          newCourse.content,
-          Web3.utils.fromWei(priceWei, 'ether')
-        ).send({ from: accountAddress, gas: 3000000 });
-        setTxnHash(transaction.transactionHash);
-        setShowMessage(true);
-        setDisplayMessage("Course created successfully!");
-        fetchCourses();
-      } catch (error) {
-        console.error("Failed to create course:", error);
-        setDisplayMessage("Failed to create course.");
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
   const fetchCourses = async () => {
     if (contracts) {
       try {
         // Fetch total course count from the contract
         const courseCount = await contracts.methods.courseCount().call();
         console.log("Total number of courses:", courseCount);
-  
+
         const fetchedCourses = [];
         // Loop through all courses using the total course count
         for (let i = 0; i < courseCount; i++) {
@@ -151,7 +119,7 @@ const App: React.FC = () => {
             author: course.author
           });
         }
-  
+
         // Set the fetched courses in your state or UI
         setCourses(fetchedCourses);
       } catch (error) {
@@ -174,7 +142,8 @@ const App: React.FC = () => {
             title: course.title,
             description: course.description,
             price: Web3.utils.fromWei(course.price, 'ether'),
-            markdownContent: course.markdownContent
+            markdownContent: course.markdownContent,
+            author: course.author
           });
         }
         setOwnedCourses(fetchedCourses);
@@ -215,7 +184,6 @@ const App: React.FC = () => {
     }
   }, [isConnected]);
 
-
   const giftCourse = async (courseId: number, price: string) => {
     if (contracts && web3) {
       try {
@@ -235,90 +203,103 @@ const App: React.FC = () => {
     }
   };
 
+
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-between">
+      <div className="min-h-screen flex flex-col">
         <Header />
-        <div className="flex flex-col items-center justify-center flex-grow w-full mt-24 px-4">
+        <main className="flex-grow container mx-auto px-4 py-12 mt-16">
           {!ocidUsername && (
-            <div className="max-w-2xl w-full p-8 shadow-lg rounded-lg">
-              <div className="flex justify-center mt-8">
+            <div className="max-w-md mx-auto p-8 bg-white shadow-lg rounded-lg">
+              <h1 className="text-3xl font-semibold text-center mb-8">Welcome to EduMarket</h1>
+              <div className="flex justify-center">
                 <LoginButton />
               </div>
             </div>
           )}
           {ocidUsername && (
-            <div className="max-w-4xl w-full">
+            <div className="max-w-7xl mx-auto">
+                                <h1 className="text-4xl font-bold mb-8 text-center">
+                                    Welcome, <span className="text-indigo-600">{ocidUsername}</span>!
+                                </h1>
               {!isConnected && (
-                <Card className="w-full max-w-2xl p-8 shadow-lg" style={{margin: 'auto'}}>
-                  <CardHeader>
-                    <CardTitle className="text-center text-4xl font-bold mt-4">
-                      EduMarket
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-col items-center mt-4 space-y-6">
-                    <Button
-                      className="bg-teal-400 hover:bg-teal-700 text-black font-bold py-2 px-4 rounded-md mb-4"
-                      onClick={ConnectWallet}
-                      variant="link"
-                    >
-                      Connect with MetaMask
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div className="max-w-md mx-auto p-8 bg-white shadow-lg rounded-lg text-center">
+                  <h2 className="text-2xl font-semibold mb-4">Connect Your Wallet</h2>
+                  <Button
+                    className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md"
+                    onClick={ConnectWallet}
+                  >
+                    Connect with MetaMask
+                  </Button>
+                </div>
               )}
               {isConnected && (
                 <>
-                  <h2 className="text-2xl font-bold mb-4">Available Courses</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                    {courses.map((course) => (
-                      <div key={course.id} className="border p-4 rounded shadow-md">
-                        <h3 className="text-xl font-bold">{course.title}</h3>
-                        <p className="mt-2">{course.description}</p>
-                        <p className="mt-2">Price: {course.price} EDU</p>
-                        {!ownedCourses.includes(course.id) && (
-                          <div className="">
+                  <section className="mb-16">
+                    <h3 className="text-2xl font-semibold mb-4">Available Courses</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {courses.map((course) => (
+                        <div key={course.id} className="bg-white p-6 rounded-lg shadow-lg">
+                          <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
+                          <p className="text-gray-600 mb-4">{course.description}</p>
+                          <p className="text-gray-800 font-medium">Price: {course.price} EDU</p>
+                          <p className="text-gray-400 font-sm mb-4">
+                            Author: {course.author?.slice(0, 10)}...
+                          </p>
+                          {!ownedCourses.includes(course.id) && (
+                            <div className="space-x-2">
+                              <Button
+                                className="bg-indigo-600 text-white font-medium py-2 px-4 rounded-md"
+                                onClick={() => purchaseCourse(course.id, course.price)}
+                              >
+                                Purchase
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="text-indigo-600 border-indigo-600 font-medium py-2 px-4 rounded-md"  
+                                onClick={() => giftCourse(course.id, course.price)}
+                              >
+                                Gift
+                              </Button>
+                            </div>
+                          )}
+                          {ownedCourses.includes(course.id) && (
+                            <span className="text-green-600 font-medium">Owned</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                  <section>
+                    <h3 className="text-2xl font-semibold mb-4">My Courses</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {ownedCourses.map((course) => (
+                        <div key={course.id} className="bg-white p-6 rounded-lg shadow-md">
+                          <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
+                          <p className="text-gray-600 mb-4">{course.description}</p>
+                          <p className="text-gray-400 font-sm mb-4">
+                            Author: {course.author?.slice(0, 10)}...
+                          </p>
                           <Button 
-                            className="mt-4 mr-2"
-                            onClick={() => purchaseCourse(course.id, course.price)}
+                            className="bg-indigo-600 text-white font-medium py-2 px-4 rounded-md"
+                            onClick={() => window.location.href = `/course/${course.id}`}
                           >
-                            Purchase
+                            Open
                           </Button>
-                          <Button
-                            className="mt-4"
-                            onClick={() => giftCourse(course.id, course.price)}
-                          >
-                            Gift
-                          </Button>
-                          </div>
-                        )}
-                        {ownedCourses.includes(course.id) && (
-                          <span className="block mt-4 text-green-500">Owned</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <h2 className="text-2xl font-bold mb-4">My Courses</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {ownedCourses.map((course) => (
-                      <div key={course.id} className="border p-4 rounded shadow-md">
-                        <h3 className="text-xl font-bold">{course.title}</h3>
-                        <p className="mt-2">{course.description}</p>
-                        <p className="mt-2">Price: {course.price} EDU</p>
-                  <Button className="mt-4" onClick={() => window.location.href = `/my-courses`}>Open</Button>
-                      </div>
-                    ))}
-                  </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
                 </>
               )}
             </div>
           )}
-        </div>
+        </main>
         <Footer />
       </div>
     </>
   );
-};
+}
 
 export default App;
 

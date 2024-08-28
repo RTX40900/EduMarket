@@ -4,7 +4,6 @@ import contractJson from "@/contracts/CourseStorage.sol/CourseStorage.json";
 import { Contracts } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CourseStorageContractAddress } from "@/app/constants";
-import { useWallet } from "../WalletContext";
 import Web3 from "web3";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import { jwtDecode } from "jwt-decode";
@@ -12,8 +11,6 @@ import LoginButton from "@/components/LoginButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
 
 interface Course {
   id: number;
@@ -24,125 +21,116 @@ interface Course {
 
 
 interface DecodedToken {
-    edu_username: string;
-    [key: string]: any;
-  }
-  
-  interface Course {
-    id: number;
-    title: string;
-    description: string;
-    price: string;
-    markdownContent?: string;
-  }
-  
+  edu_username: string;
+  [key: string]: any;
+}
+
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  price: string;
+  markdownContent?: string;
+  author?: string;
+}
+
 
 const MyCourses: React.FC = () => {
-    const { authState } = useOCAuth();
-    const [isConnected, setIsConnected] = useState<boolean>(false);
-    const [accountAddress, setAccountAddress] = useState<string | undefined>(
-      undefined
-    );
-    const [displayMessage, setDisplayMessage] = useState<string>("");
-    const [web3, setWeb3] = useState<Web3 | undefined>(undefined);
-    const [contracts, setContracts] = useState<Contracts | undefined>(undefined);
-    // const [getNetwork, setGetNetwork] = useState<number | undefined>(undefined);
-    // const [mmStatus, setMmStatus] = useState<string>("Not connected!");
-    // const [contractAddress, setContractAddress] = useState<string | undefined>(
-    //   undefined
-    // );
-    const [loading, setLoading] = useState<boolean>(false);
-    const [txnHash, setTxnHash] = useState<string | null>(null);
-    const [showMessage, setShowMessage] = useState<boolean>(false);
-    const [ocidUsername, setOcidUsername] = useState<string | null>(null);
-  
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [ownedCourses, setOwnedCourses] = useState<Course[]>([]);
-    const [newCourse, setNewCourse] = useState({ title: "", description: "", content: "", price: "" });
-  
-    useEffect(() => {
-      if (authState.idToken) {
-        const decodedToken = jwtDecode<DecodedToken>(authState.idToken);
-        setOcidUsername(decodedToken.edu_username);
-      }
-  
-      (async () => {
-        try {
-          if (typeof window.ethereum !== "undefined") {
-            const web3 = new Web3(window.ethereum);
-            setWeb3(web3);
-            const networkId: any = await web3.eth.getChainId();
-            const contractAddress = CourseStorageContractAddress;
-            // setGetNetwork(networkId);
-            // setContractAddress(CourseStorageContractAddress);
-            const CourseStorage = new web3.eth.Contract(
-              contractJson.abi,
-              contractAddress
-            ) as Contracts;
-            setContracts(CourseStorage);
-            CourseStorage.setProvider(window.ethereum);
-          } else {
-            alert("Please install MetaMask!");
-          }
-        } catch (error) {
-          console.error("Failed to initialize web3 or contract:", error);
-        }
-      })();
-    }, [authState.idToken]);
-  
-    const ConnectWallet = async () => {
-      if (typeof window.ethereum !== "undefined") {
-        try {
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          });
-          if (chainId !== "0xa045c") {
-            alert(
-              `Please connect to the "Open Campus Codex" network in Metamask.`
-            );
-            return;
-          }
-          await window.ethereum.request({ method: "eth_requestAccounts" });
-          const accounts = await window.ethereum.request({
-            method: "eth_accounts",
-          });
-          setAccountAddress(accounts[0]);
-          // setMmStatus("Connected!");
-          setIsConnected(true);
-        } catch (error) {
-          console.error("Failed to connect to wallet:", error);
-        }
-      } else {
-        alert("Please install MetaMask!");
-      }
-    };
-  
+  const { authState } = useOCAuth();
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [accountAddress, setAccountAddress] = useState<string | undefined>(
+    undefined
+  );
+  const [web3, setWeb3] = useState<Web3 | undefined>(undefined);
+  const [contracts, setContracts] = useState<Contracts | undefined>(undefined);
+  const [ocidUsername, setOcidUsername] = useState<string | null>(null);
 
-      const fetchOwnedCourses = async () => {
-        if (contracts && accountAddress) {
-          try {
-            const owned = await contracts.methods.getOwnedCourses(accountAddress).call();
-            console.log(`Owned courses: ${owned}, ${owned.length}`)
-            const fetchedCourses: Course[] = [];
-            for (let i = 0; i < owned.length; i++) {
-              const courseId = owned[i];
-              const course = await contracts.methods.getCourse(courseId).call();
-              console.log(`Course: ${course.title}`)
-              fetchedCourses.push({
-                id: courseId,
-                title: course.title,
-                description: course.description,
-                price: Web3.utils.fromWei(course.price, 'ether'),
-                markdownContent: course.markdownContent
-              });
-            }
-            setOwnedCourses(fetchedCourses);
-            console.log(`Owned courses: ${ownedCourses}`)
-          } catch (error) {
-            console.error("Failed to fetch owned courses:", error);
-          }
+  const [ownedCourses, setOwnedCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    if (authState.idToken) {
+      const decodedToken = jwtDecode<DecodedToken>(authState.idToken);
+      setOcidUsername(decodedToken.edu_username);
+    }
+
+    (async () => {
+      try {
+        if (typeof window.ethereum !== "undefined") {
+          const web3 = new Web3(window.ethereum);
+          setWeb3(web3);
+          const networkId: any = await web3.eth.getChainId();
+          const contractAddress = CourseStorageContractAddress;
+          // setGetNetwork(networkId);
+          // setContractAddress(CourseStorageContractAddress);
+          const CourseStorage = new web3.eth.Contract(
+            contractJson.abi,
+            contractAddress
+          ) as Contracts;
+          setContracts(CourseStorage);
+          CourseStorage.setProvider(window.ethereum);
+        } else {
+          alert("Please install MetaMask!");
         }
-      };
+      } catch (error) {
+        console.error("Failed to initialize web3 or contract:", error);
+      }
+    })();
+  }, [authState.idToken]);
+
+  const ConnectWallet = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
+        if (chainId !== "0xa045c") {
+          alert(
+            `Please connect to the "Open Campus Codex" network in Metamask.`
+          );
+          return;
+        }
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+        setAccountAddress(accounts[0]);
+        // setMmStatus("Connected!");
+        setIsConnected(true);
+      } catch (error) {
+        console.error("Failed to connect to wallet:", error);
+      }
+    } else {
+      alert("Please install MetaMask!");
+    }
+  };
+
+
+  const fetchOwnedCourses = async () => {
+    if (contracts && accountAddress) {
+      try {
+        const owned = await contracts.methods.getOwnedCourses(accountAddress).call();
+        console.log(`Owned courses: ${owned}, ${owned.length}`)
+        const fetchedCourses: Course[] = [];
+        for (let i = 0; i < owned.length; i++) {
+          const courseId = owned[i];
+          const course = await contracts.methods.getCourse(courseId).call();
+          console.log(`Course: ${course.title}`)
+          fetchedCourses.push({
+            id: courseId,
+            title: course.title,
+            description: course.description,
+            price: Web3.utils.fromWei(course.price, 'ether'),
+            markdownContent: course.markdownContent,
+            author: course.author
+          });
+        }
+        setOwnedCourses(fetchedCourses);
+        console.log(`Owned courses: ${ownedCourses}`)
+      } catch (error) {
+        console.error("Failed to fetch owned courses:", error);
+      }
+    }
+  };
 
   useEffect(() => {
 
@@ -153,32 +141,26 @@ const MyCourses: React.FC = () => {
   }, [isConnected]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       <Header />
-      <div className="flex flex-col items-center justify-center flex-grow w-full mt-24 px-4">
+      <main className="flex-grow container mx-auto px-4 py-12 mt-16">
         {!ocidUsername && <LoginButton />}
         {ocidUsername && (
-          <div className="max-w-4xl w-full">
-            <div className="text-center text-xl mb-8">
-              <h1>
-                👉Welcome,{" "}
-                <a href="/user">
-                  <strong>{ocidUsername}👈</strong>
-                </a>{" "}
-              </h1>
-            </div>
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-4xl font-bold mb-8 text-center">
+              Welcome, <span className="text-indigo-600">{ocidUsername}</span>!
+            </h1>
             {!isConnected && (
-              <Card className="w-full max-w-2xl p-8 shadow-lg" style={{ margin: 'auto' }}>
+              <Card className="max-w-md mx-auto p-8 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-center text-4xl font-bold mt-4">
-                    EduMarket
+                  <CardTitle className="text-2xl font-bold text-center mb-4">
+                    Connect Your Wallet
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center mt-4 space-y-6">
+                <CardContent className="flex justify-center">
                   <Button
-                    className="bg-teal-400 hover:bg-teal-700 text-black font-bold py-2 px-4 rounded-md mb-4"
+                    className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md"
                     onClick={ConnectWallet}
-                    variant="link"
                   >
                     Connect with MetaMask
                   </Button>
@@ -187,29 +169,29 @@ const MyCourses: React.FC = () => {
             )}
             {isConnected && (
               <>
-              <h2 className="text-2xl font-bold mb-4">My Courses</h2>
-              <div className="space-y-8">
-                {ownedCourses.map((course) => (
-                  <div key={course.id} className="border p-4 rounded shadow-md">
-                    <h3 className="text-xl font-bold">{course.title}</h3>
-                    <p className="mt-2">{course.description}</p>
-                    <p className="mt-2">Price: {course.price} ETH</p>
-                    <div className="mt-4 prose">
-                      {course.markdownContent && <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                      {course.markdownContent.replace(
-        /https:\/\/youtu\.be\/(\w+)/g,
-        '<iframe width="560" height="315" src="https://www.youtube.com/embed/$1" frameBorder="0" allowFullScreen></iframe>'
-      )}
-                        </ReactMarkdown>}
-                    </div>
+                <section className="mb-16">
+                  <h2 className="text-3xl font-bold mb-8">My Courses</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {ownedCourses.map((course) => (
+                      <div key={course.id} className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-xl font-bold mb-2">{course.title}</h3>
+                        <p className="text-gray-600 mb-4">{course.description}</p>
+                          <p className="text-gray-400 font-sm mb-4">Author: {course.author?.slice(0, 10)}...</p>
+                        <Button
+                          className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md"
+                          onClick={() => window.location.href = `/course/${course.id}`}
+                        >
+                          Open
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </>
+                </section>
+              </>
             )}
           </div>
         )}
-      </div>
+      </main>
       <Footer />
     </div>
   );
