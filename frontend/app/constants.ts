@@ -1,0 +1,1 @@
+export const CourseStorageContractAddress = "0x6CF3459F225385ae69d9b09786Ffe3b404725111";
