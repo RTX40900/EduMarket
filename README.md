@@ -33,7 +33,7 @@ Whenever someone purchases a course, the funds are transferred directly to the c
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/edumarket.git
+   git clone https://github.com/RTX40900/edumarket.git
    cd edumarket
    ```
 
@@ -42,11 +42,6 @@ Whenever someone purchases a course, the funds are transferred directly to the c
    npm install
    ```
 
-3. Create a `.env` file in the root directory and add your environment variables:
-   ```env
-   NEXT_PUBLIC_OCID_CLIENT_ID=your_ocid_client_id
-   NEXT_PUBLIC_OCID_REDIRECT_URI=your_ocid_redirect_uri
-   ```
 
 4. Run the development server:
    ```bash
