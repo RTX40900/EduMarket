@@ -1,4 +1,6 @@
 # EduMarket
+<img width="1206" alt="Screenshot 2024-08-29 at 4 06 01 AM" src="https://github.com/user-attachments/assets/936cf527-83bf-43e7-b63b-1b18e48cf25c">
+
 
 EduMarket is a decentralized platform that allows users to buy, sell, gift, and create educational courses using blockchain technology. This enables users to also make money by creating and selling their own courses.
 
